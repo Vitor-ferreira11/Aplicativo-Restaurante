@@ -1,0 +1,25 @@
+name: Verificações Flutter
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Preparar Flutter oficial
+        run: |
+          git clone --depth 1 --branch 3.29.3 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Verificar testes e build web
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+          flutter build web
