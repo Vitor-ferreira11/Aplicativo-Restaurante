@@ -13,7 +13,7 @@ class RestaurantScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: getAppBar(context: context, title: restaurant.name),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           spacing: 12.0,
           crossAxisAlignment: CrossAxisAlignment.center,

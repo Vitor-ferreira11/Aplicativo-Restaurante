@@ -1,30 +1,50 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:myapp/model/dish.dart';
+import 'package:myapp/ui/_core/bag_provider.dart';
 
-import 'package:myapp/main.dart';
+Dish prato(String id) => Dish(
+  id: id,
+  name: 'Prato $id',
+  description: 'Descrição',
+  price: 25,
+  imagePath: 'prato.png',
+);
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  late BagProvider bag;
+  setUp(() {
+    bag = BagProvider();
+  });
+  tearDown(() {
+    bag.dispose();
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  test('sacola inicia vazia', () {
+    expect(bag.dishesOnBag, isEmpty);
+    expect(bag.getMapByAmount(), isEmpty);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('agrupa quantidades e remove uma unidade', () {
+    final primeiro = prato('1');
+    final segundo = prato('2');
+    bag.addAllDishes([primeiro, primeiro, segundo]);
+    expect(bag.getMapByAmount(), {primeiro: 2, segundo: 1});
+    bag.removeDish(primeiro);
+    expect(bag.getMapByAmount(), {primeiro: 1, segundo: 1});
+    bag.removeDish(primeiro);
+    expect(bag.getMapByAmount(), {segundo: 1});
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('limpa sacola e comunica cada operação aos ouvintes', () {
+    var notificacoes = 0;
+    bag.addListener(() {
+      notificacoes++;
+    });
+    final item = prato('1');
+    bag.addAllDishes([item, item]);
+    bag.removeDish(item);
+    bag.clearBag();
+    expect(notificacoes, 3);
+    expect(bag.dishesOnBag, isEmpty);
   });
 }
